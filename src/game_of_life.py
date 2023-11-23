@@ -3,14 +3,14 @@
 __author__ = 'Daniel Elisabethsønn Antonsen'
 
 # Import libraries and 
-import pygame
-import numpy as np
+import pygame, sys, random
 
 # Game of Life class object
 class GL:
 
-    # FPS
+    # FPS and update frequency
     FPS = 60
+    UPDATE_FREQ = 60
 
     # Width and height of screen
     WIDTH, HEIGHT = 800, 600
@@ -36,7 +36,21 @@ class GL:
         # Defining screeen
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
 
+        self.count = 0
+    
+    def random_position(self, num_of_cells:int):
+        """
+        Initialize random position for alive cells
+        """
+        return set([
+                    (random.randrange(0, self.GRID_HEIGHT), 
+                     random.randrange(0, self.GRID_WIDTH)) for _ in range(num_of_cells)
+                ])
+
     def event_handler(self, events:list):
+        """
+        Event handler
+        """
         for event in events:
             if event.type == pygame.QUIT:
                 self.running = False
@@ -47,11 +61,28 @@ class GL:
                 row = m_pos[1] // self.TILE_SIZE
                 pos = (col, row)
 
-                # Checking if pos in pos
+                # Checking if pos in set of positions
                 if pos in self.positions:
                     self.positions.remove(pos)
                 else:
                     self.positions.add(pos)
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.running = False
+                
+                if event.key == pygame.K_SPACE:
+                    self.pause = not self.pause
+                
+                if event.key == pygame.K_c:
+                    # Resetting grid
+                    self.positions = set()
+                    self.pause = True
+                    self.count = 0
+                
+                if event.key == pygame.K_g:
+                    self.positions = self.random_position(random.randrange(4, 10) * self.GRID_WIDTH)
+                
 
     def draw_grid(self, positions:set):
         """
@@ -63,13 +94,38 @@ class GL:
             pygame.draw.rect(self.screen, self.GOLDEN, (*tl, self.TILE_SIZE, self.TILE_SIZE))
         
         for row in range(self.GRID_HEIGHT):
-            pygame.draw.line(self.screen, self.BLACK, (0, row * self.TILE_SIZE), (self.WIDTH, row * self.TILE_SIZE))
+            pygame.draw.line(self.screen, self.BLACK, (0, row * self.TILE_SIZE), 
+                             (self.WIDTH, row * self.TILE_SIZE))
         for col in range(self.GRID_WIDTH):
-            pygame.draw.line(self.screen, self.BLACK, (col * self.TILE_SIZE, 0), (col * self.TILE_SIZE, self.HEIGHT))
+            pygame.draw.line(self.screen, self.BLACK, (col * self.TILE_SIZE, 0), 
+                             (col * self.TILE_SIZE, self.HEIGHT))
 
 
     def get_neighbors(self, positions:set):
-        pass
+        """
+        Finding neighbors of alive grid-cells
+        """
+        
+
+    
+    def adjust_grid(self, positions:set):
+        """
+        Adjusting the grid based on alive cells
+        """
+        x, y = positions
+        neighbors = []
+        for dx in [-1, 0, 1]:
+            if x + dx < 0 or x + dx > self.GRID_WIDTH:
+                continue
+            for dy in [-1, 0, 1]:
+                if y + dy < 0 or y + dy > self.GRID_WIDTH:
+                    continue
+                if dx == 0 and dy == 0:
+                    continue
+                neighbors.append((x + dx, y + dy))
+        
+        return neighbors
+
 
     def run(self):
         """
@@ -80,9 +136,19 @@ class GL:
         while self.running:
             # Setting max fps 
             clock.tick(self.FPS)
+
+            if not self.pause:
+                self.count += 1
             
+            if self.count >= self.UPDATE_FREQ:
+                self.count = 0
+                self.positions = self.adjust_grid()
+
             # Handeling events
             self.event_handler(pygame.event.get())
+
+            # Setting caption
+            pygame.display.set_caption('Playing' if not self.pause else 'Paused')
             
             # Background color
             self.screen.fill(self.GREY)
@@ -90,6 +156,10 @@ class GL:
 
             # Updating screen
             pygame.display.update()
+        
+        # Close pygame and system
+        pygame.quit()
+        sys.exit()
             
             
 
