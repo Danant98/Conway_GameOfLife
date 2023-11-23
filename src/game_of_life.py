@@ -179,7 +179,3 @@ class GL:
         # Close pygame and system
         pygame.quit()
         sys.exit()
-            
-            
-
-
