@@ -43,8 +43,8 @@ class GL:
         Initialize random position for alive cells
         """
         return set([
-                    (random.randrange(0, self.GRID_HEIGHT), 
-                     random.randrange(0, self.GRID_WIDTH)) for _ in range(num_of_cells)
+                    (random.randrange(0, self.GRID_WIDTH), 
+                     random.randrange(0, self.GRID_HEIGHT)) for _ in range(num_of_cells)
                 ])
 
     def event_handler(self, events:list):
@@ -83,7 +83,6 @@ class GL:
                 if event.key == pygame.K_g:
                     self.positions = self.random_position(random.randrange(4, 10) * self.GRID_WIDTH)
                 
-
     def draw_grid(self, positions:set):
         """
         Drawing grid-cells and alive cells
@@ -101,14 +100,34 @@ class GL:
                              (col * self.TILE_SIZE, self.HEIGHT))
 
 
-    def get_neighbors(self, positions:set):
+    def adjust_grid(self, positions:set):
         """
         Finding neighbors of alive grid-cells
         """
+        set_neighbors = set()
+        new_pos = set()
+
+        for pos in positions:
+            neighbors = self.get_neighbors(pos)
+            set_neighbors.update(neighbors)
+
+            neighbors = list(filter(lambda x: x in self.positions,  neighbors))
+
+            if len(neighbors) in [2, 3]:
+                new_pos.add(pos)
+        
+        for pos in set_neighbors:
+            neighbors = self.get_neighbors(pos)
+            neighbors = list(filter(lambda x: x in self.positions, neighbors))
+
+            if len(neighbors) == 3:
+                new_pos.add(pos)
+        
+        return new_pos
         
 
     
-    def adjust_grid(self, positions:set):
+    def get_neighbors(self, positions:set):
         """
         Adjusting the grid based on alive cells
         """
@@ -142,8 +161,8 @@ class GL:
             
             if self.count >= self.UPDATE_FREQ:
                 self.count = 0
-                self.positions = self.adjust_grid()
-
+                self.positions = self.adjust_grid(self.positions)
+                
             # Handeling events
             self.event_handler(pygame.event.get())
 
