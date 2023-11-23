@@ -3,10 +3,8 @@
 __author__ = 'Daniel Elisabethsønn Antonsen'
 
 # Import libraries and 
-from game_of_life import GL as gl
-
+from game_of_life import GL
 
 if __name__ == '__main__':
+    gl = GL()
     gl.run()
-
-
