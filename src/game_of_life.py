@@ -124,9 +124,8 @@ class GL:
                 new_pos.add(pos)
         
         return new_pos
-        
 
-    
+
     def get_neighbors(self, positions:set):
         """
         Adjusting the grid based on alive cells
