@@ -2,7 +2,7 @@
 
 __author__ = 'Daniel Elisabethsønn Antonsen'
 
-# Import libraries and 
+# Import libraries and modules 
 from game_of_life import GL
 
 if __name__ == '__main__':
